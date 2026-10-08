@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajuda e Glossário</title>
+  <link rel="stylesheet" href="/v1/style.css">
+</head>
+<body>
+  <header>
+    <a href="/v1/" class="marca"><span class="logo">P<i class="online"></i></span>Portaria</a>
+    <nav class="nav">
+      <a href="/v1/">Busca</a>
+      <a href="/v1/cadastro-moradores.html">Cadastro</a>
+      <a href="/v1/editar-moradores.html">Edição</a>
+      <a href="/v1/detalhes-moradores.html">Detalhes</a>
+      <a href="/v1/inativar-moradores.html">Inativação</a>
+      <a href="/v1/movimentacao-veiculos.html">Movimentação</a>
+      <a href="/v1/atualizacao-cadastro.html">Relatório</a>
+      <a href="/v1/glossario.html" class="ativo">Ajuda</a>
+    </nav>
+    <h1>Ajuda e Glossário</h1>
+    <p>Entenda cada recurso da portaria</p>
+  </header>
+  <div class="subbar"><span>Portaria · <strong>Ajuda</strong></span><span>v1</span></div>
+
+  <main class="pagina-ajuda">
+    <section class="ajuda-introducao">
+      <p class="eyebrow">Guia rápido</p>
+      <h2>Como usar o Spazio</h2>
+      <p>Use o menu para consultar moradores, manter os cadastros atualizados, controlar a movimentação de carros e acompanhar a ocupação das unidades.</p>
+    </section>
+
+    <div class="glossario-grid">
+      <section class="bloco-ajuda">
+        <h2>Busca e visão geral</h2>
+        <dl>
+          <div><dt>Dashboard</dt><dd>Resumo da operação com totais de moradores, tipos, veículos e carros atualmente dentro.</dd></div>
+          <div><dt>Busca</dt><dd>Procure por nome, placa ou apartamento. Use os filtros para restringir por tipo, situação ou veículo.</dd></div>
+          <div><dt>Morador ativo</dt><dd>Cadastro disponível nas consultas e nos fluxos de operação da portaria.</dd></div>
+          <div><dt>Morador inativo</dt><dd>Cadastro preservado no histórico, mas que não aparece nas operações destinadas a moradores ativos.</dd></div>
+          <div><dt>Paginação</dt><dd>Divide muitos resultados em páginas menores para facilitar a leitura, especialmente no celular.</dd></div>
+        </dl>
+      </section>
+
+      <section class="bloco-ajuda">
+        <h2>Cadastros</h2>
+        <dl>
+          <div><dt>Cadastro</dt><dd>Cria um novo registro de morador, com tipo, apartamento, contatos, pet, bicicleta e veículos.</dd></div>
+          <div><dt>Edição</dt><dd>Atualiza as informações de um morador ativo e seus veículos.</dd></div>
+          <div><dt>Tipo de morador</dt><dd>Classificação entre Proprietário, Locatário ou Outros.</dd></div>
+          <div><dt>Veículo principal</dt><dd>Primeiro carro ou moto informado no cadastro. Todos os veículos vinculados continuam disponíveis nos detalhes.</dd></div>
+          <div><dt>Inativação</dt><dd>Retira o morador das operações sem apagar seu histórico. A ação pede confirmação antes de ser concluída.</dd></div>
+        </dl>
+      </section>
+
+      <section class="bloco-ajuda">
+        <h2>Veículos e movimentação</h2>
+        <dl>
+          <div><dt>Dentro</dt><dd>O último registro do carro foi uma entrada. O sistema bloqueia uma nova entrada até que seja registrada uma saída.</dd></div>
+          <div><dt>Fora</dt><dd>O carro ainda não possui entrada registrada ou seu último registro foi uma saída.</dd></div>
+          <div><dt>Entrada</dt><dd>Registra que um carro entrou no condomínio.</dd></div>
+          <div><dt>Saída</dt><dd>Registra que um carro saiu do condomínio.</dd></div>
+          <div><dt>Histórico</dt><dd>Lista as últimas movimentações e permite filtrar por nome, apartamento, placa e estado atual.</dd></div>
+          <div><dt>Exportar CSV</dt><dd>Baixa o histórico visível em um arquivo que pode ser aberto em planilhas.</dd></div>
+        </dl>
+      </section>
+
+      <section class="bloco-ajuda">
+        <h2>Relatório de unidades</h2>
+        <dl>
+          <div><dt>Unidade cadastrada</dt><dd>Apartamento que possui pelo menos um morador ativo vinculado.</dd></div>
+          <div><dt>Unidade sem cadastro</dt><dd>Apartamento que ainda não possui morador ativo cadastrado.</dd></div>
+          <div><dt>Filtros do relatório</dt><dd>Permitem procurar por número ou nome e exibir somente unidades cadastradas ou pendentes.</dd></div>
+        </dl>
+      </section>
+    </div>
+
+    <section class="ajuda-atendimento">
+      <strong>Boas práticas</strong>
+      <p>Confirme o apartamento e a placa antes de salvar. Registre a movimentação no momento em que ela ocorrer e mantenha os dados de contato atualizados.</p>
+    </section>
+  </main>
+</body>
+</html>
