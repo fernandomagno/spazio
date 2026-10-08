@@ -88,39 +88,46 @@ jobs:
 
             const baseUrl = 'http://127.0.0.1:3000';
 
-            for (const residente of fixture) {
-              const { ativo, ...dados } = residente;
+            const existentesResposta = await fetch(`${baseUrl}/api/moradores`);
+            const existentes = await existentesResposta.json();
 
-              const resposta = await fetch(`${baseUrl}/api/moradores`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dados)
-              });
+            if (existentes.length === 0) {
+              for (const residente of fixture) {
+                const { ativo, ...dados } = residente;
 
-              if (!resposta.ok) {
-                throw new Error(
-                  `Falha ao cadastrar fixture: HTTP ${resposta.status}`
-                );
-              }
+                const resposta = await fetch(`${baseUrl}/api/moradores`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(dados)
+                });
 
-              const criado = await resposta.json();
-
-              if (!ativo) {
-                const inativacao = await fetch(
-                  `${baseUrl}/api/v1/moradores/${criado.id}`,
-                  {
-                    method: 'PATCH'
-                  }
-                );
-
-                if (!inativacao.ok) {
+                if (!resposta.ok) {
                   throw new Error(
-                    `Falha ao inativar fixture: HTTP ${inativacao.status}`
+                    `Falha ao cadastrar fixture: HTTP ${resposta.status}`
                   );
                 }
+
+                const criado = await resposta.json();
+
+                if (!ativo) {
+                  const inativacao = await fetch(
+                    `${baseUrl}/api/v1/moradores/${criado.id}`,
+                    {
+                      method: 'PATCH'
+                    }
+                  );
+
+                  if (!inativacao.ok) {
+                    throw new Error(
+                      `Falha ao inativar fixture: HTTP ${inativacao.status}`
+                    );
+                  }
+                }
               }
+            } else {
+              console.log(`Massa inicial já carregada: ${existentes.length} moradores.`);
             }
 
             const todosResposta = await fetch(
