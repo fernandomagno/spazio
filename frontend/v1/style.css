@@ -249,6 +249,10 @@ form label { display: block; font-weight: 600; margin-bottom: 10px; }
 .tabela tbody tr:hover { background: #dbeafe; }
 
 .pagina-inativacao { max-width: 980px; }
+.pagina-detalhes { max-width: 1400px; }
+.pagina-detalhes .tabela-container { overflow-x: hidden; }
+.pagina-detalhes .tabela { table-layout: fixed; font-size: .9rem; }
+.pagina-detalhes .tabela th, .pagina-detalhes .tabela td { overflow-wrap: anywhere; word-break: break-word; }
 .pagina-inativacao h2 { font-size: 1.15rem; margin-bottom: 14px; }
 .pagina-relatorio { max-width: 1100px; }
 .resumo-relatorio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
@@ -371,6 +375,8 @@ form label { display: block; font-weight: 600; margin-bottom: 10px; }
 .cadastro-edicao .mensagem:empty { display: none; }
 
 @media (max-width: 900px) {
+  .pagina-detalhes .tabela { font-size: .78rem; }
+  .pagina-detalhes .tabela th, .pagina-detalhes .tabela td { padding: 10px 8px; }
   .grade-unidades { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .cadastro-moradores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cadastro-moradores button[type="submit"] { grid-column: 2; }
