@@ -90,6 +90,38 @@ if (!colunasMovimentacoes.includes("marca_modelo")) {
   db.exec("UPDATE movimentacoes_veiculos SET marca_modelo = (SELECT marca_modelo FROM moradores WHERE moradores.id = movimentacoes_veiculos.morador_id) WHERE marca_modelo IS NULL");
 }
 
+function carregarFixtureInicial() {
+  const total = db.prepare("SELECT COUNT(*) AS total FROM moradores").get().total;
+  const caminhoFixture = path.join(DADOS, "fixtures", "moradores.json");
+  if (total > 0 || !fs.existsSync(caminhoFixture)) return;
+
+  const fixture = JSON.parse(fs.readFileSync(caminhoFixture, "utf8"));
+  const inserirMoradorFixture = db.prepare("INSERT INTO moradores (condominio, morador, email, bicicleta, pet, nome_pet, apto, veiculo, placa, marca_modelo, tipo, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  const inserirVeiculoFixture = db.prepare("INSERT INTO veiculos (morador_id, tipo, placa, marca_modelo) VALUES (?, ?, ?, ?)");
+
+  db.exec("BEGIN");
+  try {
+    for (const morador of fixture) {
+      const veiculos = Array.isArray(morador.veiculos) ? morador.veiculos : [];
+      const principal = veiculos[0] ?? {};
+      const resultado = inserirMoradorFixture.run(
+        morador.condominio ?? null, morador.morador, morador.email ?? null,
+        morador.bicicleta ?? null, morador.pet ?? null, morador.nome_pet ?? null,
+        morador.apto, principal.tipo ?? null, principal.placa ?? null,
+        principal.marca_modelo ?? null, morador.tipo, morador.ativo === false ? 0 : 1
+      );
+      const id = Number(resultado.lastInsertRowid);
+      veiculos.forEach(veiculo => inserirVeiculoFixture.run(id, veiculo.tipo, veiculo.placa ?? null, veiculo.marca_modelo ?? null));
+    }
+    db.exec("COMMIT");
+  } catch (erro) {
+    db.exec("ROLLBACK");
+    throw erro;
+  }
+}
+
+carregarFixtureInicial();
+
 const listar = db.prepare("SELECT id, condominio, morador, email, bicicleta, pet, nome_pet, apto, veiculo, placa, marca_modelo, tipo FROM moradores ORDER BY morador");
 const listarAtivos = db.prepare("SELECT id, condominio, morador, email, bicicleta, pet, nome_pet, apto, veiculo, placa, marca_modelo, tipo FROM moradores WHERE ativo = 1 ORDER BY morador");
 const listarVeiculos = db.prepare("SELECT id, morador_id, tipo, placa, marca_modelo FROM veiculos WHERE morador_id = ? ORDER BY id");
