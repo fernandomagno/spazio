@@ -122,13 +122,14 @@ function carregarFixtureInicial() {
 
 carregarFixtureInicial();
 
-const listar = db.prepare("SELECT id, condominio, morador, email, bicicleta, pet, nome_pet, apto, veiculo, placa, marca_modelo, tipo FROM moradores ORDER BY morador");
+const listar = db.prepare("SELECT id, condominio, morador, email, bicicleta, pet, nome_pet, apto, veiculo, placa, marca_modelo, tipo, ativo FROM moradores ORDER BY morador");
 const listarAtivos = db.prepare("SELECT id, condominio, morador, email, bicicleta, pet, nome_pet, apto, veiculo, placa, marca_modelo, tipo FROM moradores WHERE ativo = 1 ORDER BY morador");
 const listarVeiculos = db.prepare("SELECT id, morador_id, tipo, placa, marca_modelo FROM veiculos WHERE morador_id = ? ORDER BY id");
-const listarCarrosAtivos = db.prepare("SELECT v.id, m.morador, m.apto, v.placa, v.marca_modelo FROM veiculos v JOIN moradores m ON m.id = v.morador_id WHERE m.ativo = 1 AND v.tipo = 'Carro' AND v.placa IS NOT NULL AND TRIM(v.placa) <> '' ORDER BY v.placa");
+const listarCarrosAtivos = db.prepare("SELECT v.id, m.morador, m.apto, v.placa, v.marca_modelo, CASE WHEN (SELECT movimento FROM movimentacoes_veiculos mv WHERE mv.placa = v.placa ORDER BY mv.id DESC LIMIT 1) = 'Entrada' THEN 'Dentro' ELSE 'Fora' END AS status FROM veiculos v JOIN moradores m ON m.id = v.morador_id WHERE m.ativo = 1 AND v.tipo = 'Carro' AND v.placa IS NOT NULL AND TRIM(v.placa) <> '' ORDER BY v.placa");
 const listarMovimentacoes = db.prepare("SELECT id, morador_id, morador, apto, placa, marca_modelo, movimento, registrado_em FROM movimentacoes_veiculos ORDER BY id DESC LIMIT 50");
 const listarMovimentacaoPorId = db.prepare("SELECT id, morador_id, morador, apto, placa, marca_modelo, movimento, registrado_em FROM movimentacoes_veiculos WHERE id = ?");
 const inserirMovimentacao = db.prepare("INSERT INTO movimentacoes_veiculos (morador_id, morador, apto, placa, marca_modelo, movimento) SELECT m.id, m.morador, m.apto, v.placa, v.marca_modelo, ? FROM veiculos v JOIN moradores m ON m.id = v.morador_id WHERE v.id = ? AND m.ativo = 1 AND v.tipo = 'Carro' AND v.placa IS NOT NULL AND TRIM(v.placa) <> ''");
+const consultarEstadoVeiculo = db.prepare("SELECT (SELECT movimento FROM movimentacoes_veiculos mv WHERE mv.placa = v.placa ORDER BY mv.id DESC LIMIT 1) AS movimento FROM veiculos v JOIN moradores m ON m.id = v.morador_id WHERE v.id = ? AND m.ativo = 1 AND v.tipo = 'Carro'");
 const inserir = db.prepare("INSERT INTO moradores (condominio, morador, email, bicicleta, pet, apto, veiculo, placa, marca_modelo, tipo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 const atualizar = db.prepare("UPDATE moradores SET tipo = ?, morador = ?, email = CASE WHEN ? THEN ? ELSE email END, bicicleta = CASE WHEN ? THEN ? ELSE bicicleta END, pet = CASE WHEN ? THEN ? ELSE pet END, apto = ?, veiculo = ?, placa = ?, marca_modelo = ? WHERE id = ?");
 const atualizarNomePet = db.prepare("UPDATE moradores SET nome_pet = ? WHERE id = ?");
@@ -160,7 +161,7 @@ function lerCorpo(req) {
   });
 }
 
-function validar(dados) {
+function validar(dados, idExcluir = null) {
   const veiculos = Array.isArray(dados.veiculos) ? dados.veiculos : [];
   if (!Array.isArray(dados.veiculos) && dados.veiculo) veiculos.push(dados);
   const veiculosValidos = [];
@@ -171,8 +172,16 @@ function validar(dados) {
     if (!tipo && !placa && !marca_modelo) continue;
     if (!VEICULOS.includes(tipo)) return { erro: "Selecione Carro ou Moto para cada veículo" };
     if (placa && placa.length > 8) return { erro: "A placa deve ter até 8 caracteres" };
+    if (placa && !/^[A-Z]{3}[0-9]{4}$|^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(placa)) return { erro: "Informe uma placa válida (ABC1234 ou ABC1D23)" };
     if (marca_modelo && marca_modelo.length > 60) return { erro: "A marca/modelo deve ter até 60 caracteres" };
     veiculosValidos.push({ tipo, placa, marca_modelo });
+  }
+  const placas = veiculosValidos.map(veiculo => veiculo.placa).filter(Boolean);
+  if (new Set(placas).size !== placas.length) return { erro: "Não repita a mesma placa no cadastro" };
+  for (const placa of placas) {
+    const duplicada = db.prepare("SELECT id FROM moradores WHERE placa = ? AND (? IS NULL OR id <> ?) LIMIT 1").get(placa, idExcluir, idExcluir);
+    const duplicadaSecundaria = db.prepare("SELECT morador_id FROM veiculos WHERE placa = ? AND (? IS NULL OR morador_id <> ?) LIMIT 1").get(placa, idExcluir, idExcluir);
+    if (duplicada || duplicadaSecundaria) return { erro: `A placa ${placa} já está cadastrada` };
   }
   if (veiculosValidos.length > 20) return { erro: "É permitido cadastrar até 20 veículos por morador" };
   const m = {
@@ -253,7 +262,7 @@ async function api(req, res, id) {
   if (req.method === "PUT" && id) {
     const dados = await lerJson(req);
     if (!dados) return json(res, 400, { erro: "JSON inválido" });
-    const { m, erro } = validar(dados);
+    const { m, erro } = validar(dados, id);
     if (erro) return json(res, 400, { erro });
 
     const salvar = () => transacionar(() => {
@@ -296,6 +305,13 @@ async function apiMovimentacoesV1(req, res) {
     const movimento = String(dados.movimento ?? "").trim();
     if (!Number.isSafeInteger(veiculoId) || veiculoId < 1) return json(res, 400, { erro: "Selecione um carro" });
     if (!["Entrada", "Saída"].includes(movimento)) return json(res, 400, { erro: "Movimentação inválida" });
+
+    const estado = consultarEstadoVeiculo.get(veiculoId);
+    if (!estado) return json(res, 404, { erro: "Carro ativo não encontrado" });
+    if (estado.movimento === movimento) {
+      const estadoAtual = movimento === "Entrada" ? "dentro" : "fora";
+      return json(res, 409, { erro: `Este carro já está ${estadoAtual} do condomínio` });
+    }
 
     const resultado = inserirMovimentacao.run(movimento, veiculoId);
     if (resultado.changes === 0) return json(res, 404, { erro: "Carro ativo não encontrado" });

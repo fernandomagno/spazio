@@ -48,7 +48,31 @@
       </div>
     </form>
 
+    <section id="dashboard" class="dashboard" aria-label="Resumo da portaria">
+      <div class="dashboard-cabecalho">
+        <div>
+          <p class="eyebrow">Visão geral</p>
+          <h2>Resumo da portaria</h2>
+        </div>
+        <span id="atualizadoEm" class="atualizado">Carregando...</span>
+      </div>
+      <div class="indicadores">
+        <div class="indicador"><strong id="totalMoradores">-</strong><span>Moradores ativos</span></div>
+        <div class="indicador"><strong id="totalProprietarios">-</strong><span>Proprietários</span></div>
+        <div class="indicador"><strong id="totalLocatarios">-</strong><span>Locatários</span></div>
+        <div class="indicador"><strong id="totalVeiculos">-</strong><span>Veículos</span></div>
+        <div class="indicador indicador-destaque"><strong id="totalDentro">-</strong><span>Carros dentro</span></div>
+      </div>
+    </section>
+
+    <section class="filtros-busca" aria-label="Filtros dos resultados">
+      <label>Tipo<select id="filtroTipo"><option value="">Todos os tipos</option><option>Proprietário</option><option>Locatário</option><option>Outros</option></select></label>
+      <label>Status<select id="filtroStatus"><option value="ativo">Ativos</option><option value="inativo">Inativos</option><option value="todos">Todos</option></select></label>
+      <label class="filtro-placa">Veículo<select id="filtroVeiculo"><option value="">Todos</option><option value="Carro">Carros</option><option value="Moto">Motos</option><option value="sem">Sem veículo</option></select></label>
+    </section>
+
     <section id="resultados"></section>
+    <div id="paginacao" class="paginacao" aria-label="Paginação"></div>
   </main>
 
   <script src="/v1/script.js"></script>

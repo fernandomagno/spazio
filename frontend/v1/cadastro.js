@@ -22,6 +22,8 @@ function adicionarVeiculo(veiculo = {}) {
   const placa = document.createElement("input");
   placa.name = "placa-veiculo";
   placa.maxLength = 8;
+  placa.pattern = "[A-Za-z]{3}[0-9]{4}|[A-Za-z]{3}[0-9][A-Za-z][0-9]{2}";
+  placa.title = "Use ABC1234 ou ABC1D23";
   placa.placeholder = "Ex.: ABC1D23";
   placa.value = veiculo.placa ?? "";
   campoPlaca.appendChild(placa);
